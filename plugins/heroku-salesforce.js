@@ -293,13 +293,17 @@ class OrgContext extends BaseContext {
  * Handles HTTP requests.
  */
 class HttpRequestUtil {
-
+    constructor(logger) {
+        this.logger = logger;
+    }
 
     async request(url, opts, json = true) {
         if (!this.got) {
             const got = await import(path.join('../node_modules/got/dist/source/index.js'));
             this.got = got.got;
         }
+
+        this.logger(`${opts.method} ${url} ${opts.headers ? JSON.stringify(opts.headers) : ''}`);
         return json ? await this.got(url, opts).json() : await this.got(url, opts);
     }
 }
@@ -320,7 +324,7 @@ class RequestHandler {
         this.requestContext = new RequestContext(request, this.config);
         this.orgContext = new OrgContext(request, this.config);
         this.logger = this.request.log;
-        this.httpRequestUtil = new HttpRequestUtil();
+        this.httpRequestUtil = new HttpRequestUtil(this.logger);
     }
 
     /**
