@@ -1,16 +1,23 @@
 'use strict'
 
 module.exports = async function (fastify, opts) {
-    fastify.get('/', async function (request, reply) {
-        return { message: 'Wassup!' };
+    fastify.get('/hello', {config: {salesforce: {managed: false}}}, async function (request, reply) {
+        return `Wassup ${request.body.name}!`;
     });
 
    /**
     * Return Accounts given count to retrieve.
     */
-    fastify.post('/accounts/', {config: {salesforce: {handle: true}}}, async function (request, reply) {
+    fastify.post('/accounts/', async function (request, reply) {
         const event = request.salesforce.event;
         const context = request.salesforce.context;
+        const logger = request.salesforce.logger;
+
+        logger.info(
+            `Invoking Account API with payload ${JSON.stringify(
+                event.data || {}
+            )}`
+        );
 
         const count = event.data.count ? event.data.count : 2;
         const query = `SELECT Id, Name FROM Account LIMIT ${count}`;
@@ -18,6 +25,17 @@ module.exports = async function (fastify, opts) {
         request.log.info(JSON.stringify(results));
 
         return results.records.map(record => record.fields);
+    });
+
+    /**
+     * Worker invoked to retrieve Accounts from specified connection (org).
+     */
+    fastify.get('/accounts/', {config: {salesforce: {managed: false}}}, async function (request, reply) {
+
+        // 1. Get connection token via add-on API
+        // 2. Query org for Accounts
+
+        return [];
     });
 
    /**

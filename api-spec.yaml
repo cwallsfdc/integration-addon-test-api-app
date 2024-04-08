@@ -1,30 +1,29 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Get Accounts
-  description: Account API
+  title: Accounts API
+  description: Account example API
 
 servers:
   - url: https://integration-addon-test-api-app-66f66763cca2.herokuapp.com/
 
 paths:
-  /:
+  /hello:
     get:
-      description: Say hello
-      x-salesforce:
-        permissionSets: [AccountApi]
+      description: Be nice, be happy
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          required: true
       responses:
         '200':
-          description: Worked
+          description: Says hello
           content:
-            application/json:
+            text/plain:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    message:
-                      type: string
+                type: string
   /accounts:
     post:
       description: Returns list of [optionally] edited array of Accounts
@@ -61,7 +60,7 @@ paths:
           $ref: '#/components/responses/DeveloperError'
         '503':
           $ref: '#/components/responses/UnknownError'
-  /uow:
+  /unitofwork:
     post:
       description:
         Receives a payload containing Account, Contact, and Case details and uses the

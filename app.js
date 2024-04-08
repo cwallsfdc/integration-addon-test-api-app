@@ -7,8 +7,9 @@ const SwaggerUI = require('@fastify/swagger-ui');
 
 // Pass --options via CLI arguments in command to enable these options.
 const options = {}
-debugger;
+
 module.exports = async function (fastify, opts) {
+
     // Place here your custom code!
     fastify.register(Swagger, {
         mode: 'static',

@@ -602,8 +602,9 @@ class RequestHandler {
 // Do on server start up
 const config = new Config(process.env);
 config.initialize().validate();
+const customAsyncHandlers = {};
 
-module.exports = fp(async function (fastify, opts, done) {
+module.exports = fp(async function (fastify, opts) {
 
     // Request handler
     fastify.decorateRequest('salesforce', '');
@@ -627,6 +628,7 @@ module.exports = fp(async function (fastify, opts, done) {
             'sfFunctionContext': requestHandler.requestContext
         };
 
+        // FIXME
         const sfEvent = await import(path.join('../node_modules/@heroku/sf-fx-runtime-nodejs/dist/sdk/invocation-event.js'));
         const orgContext = await import(path.join('../node_modules/@heroku/sf-fx-runtime-nodejs/dist/sdk/context.js'));
 
@@ -639,43 +641,45 @@ module.exports = fp(async function (fastify, opts, done) {
 
     // Async handler
     const asyncHandler = async (request, reply)=> {
+        request.log(`Async response for ${request.method} ${request.routeOptions.url}`);
         reply.code(201);
     };
 
     fastify.addHook('onRoute', (routeOptions) => {
-        if (routeOptions.config && routeOptions.config.salesforce) {
-            if (!routeOptions.preHandler) {
-                routeOptions.preHandler = [salesforcePreHandler]
-                return
-            }
-
-            if (Array.isArray(routeOptions.preHandler)) {
-                routeOptions.preHandler.push(salesforcePreHandler)
-                return
-            }
-
-            if (routeOptions.config.salesforce.async === true) {
-                const customAsyncHandler = routeOptions.handler;
-                fastify.addHook('onResponse', async (request, reply) => {
-                    await customAsyncHandler(request, reply);
-                });
-                routeOptions.handler = asyncHandler;
-            }
-        }
-    });
-
-    fastify.addHook('onResponse', async (request, reply) => {
-        if (reply.statusCode !== 201) {
+        if (routeOptions.config && routeOptions.config.salesforce && routeOptions.config.salesforce.managed === false) {
+            console.log(`${routeOptions.method} ${routeOptions.routePath} - not applying Salesforce mgmt route`);
+            // Not handling
             return;
         }
 
-        const requestHandler = new AsyncRequestHandler(config, request, reply);
-        const { requestContext, orgContext } = requestHandler.parseAndValidateContexts();
-        if (requestContext && FUNCTION_INVOCATION_TYPE_ASYNC === requestContext.type) {
-            const {body, extraInfo, statusCode} = await requestHandler.invokeFunction(requestContext);
-            await requestHandler.updateAsyncFunctionResponse(requestContext, orgContext, body, statusCode, extraInfo);
+        if (!routeOptions.preHandler) {
+            routeOptions.preHandler = [salesforcePreHandler];
+            console.log(`${routeOptions.method} ${routeOptions.routePath} - set Salesforce preHandler to route`);
+        } else if (Array.isArray(routeOptions.preHandler)) {
+            routeOptions.preHandler.push(salesforcePreHandler);
+            console.log(`${routeOptions.method} ${routeOptions.routePath} - set Salesforce preHandler[] to route`);
+        }
+
+        if (routeOptions.config && routeOptions.config.salesforce && routeOptions.config.salesforce.async === true) {
+            const customAsyncHandler = routeOptions.handler;
+            routeOptions.handler = asyncHandler;
+            customAsyncHandlers[`${routeOptions.method} ${routeOptions.routePath}`] = customAsyncHandler;
+            fastify.addHook('onResponse', async (request, reply) => {
+                const routeIdx = `${request.method} ${request.routeOptions.url}`;
+                if (request.salesforce && request.salesforce.asyncComplete === true) {
+                    request.log.info(`${routeIdx} is async complete`);
+                    return;
+                }
+
+                const customAsyncHandler = customAsyncHandlers[`${routeIdx}`];
+                request.log.info(`Did ${customAsyncHandler ? 'find' : 'not find'} async handle for route index ${routeIdx}`);
+                if (customAsyncHandler) {
+                    await customAsyncHandler(request, reply);
+                    request.salesforce.asyncComplete = true;
+                    request.log.info(`Set async ${routeIdx} completes`);
+                }
+            });
+            console.log(`${routeOptions.method} ${routeOptions.routePath} - set Salesforce async handler to route`);
         }
     });
-
-    done();
 });
