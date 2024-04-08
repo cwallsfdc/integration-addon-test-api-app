@@ -507,7 +507,8 @@ class RequestHandler {
             throwError(errMsg, 403, this.requestId);
         }
 
-        this.requestContext.accessToken(mintTokenResponse.access_token);
+        this.requestContext.accessToken = mintTokenResponse.access_token;
+        this.logger.info(`[${this.requestId}] Minted new accessToken: ${this.requestContext.accessToken}`);
 
         this.logger.info(`[${this.requestId}] Minted app's token - hooray`);
     }
