@@ -1,0 +1,12 @@
+{
+  "apiVersion": "61.0",
+  "namespace": "",
+  "payloadVersion": "0.1",
+  "orgId": "00Dxx0000006GsZEAU",
+  "orgDomainUrl": "https://herokai.my.localhost.sfdcdev.salesforce.com:7443",
+  "salesforceBaseUrl": "https://herokai.my.localhost.sfdcdev.salesforce.com:7443",
+  "userContext": {
+    "userId": "005xx000001X7tNAAS",
+    "username": "admin@heroku.com"
+  }
+}

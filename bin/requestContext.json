@@ -1,0 +1,7 @@
+{
+  "id": "00Dxx0000006IYJEA2-4Y4W3Lw_LkoskcHdEaZze-a00xx000000bxi1AAA-integration-addon-test-api-app-2020-09-03T20:56:27.608444Z",
+  "resource": "https://typescriptfunction.heroku.com",
+  "source": "urn:event:from:salesforce/xx/00Dxx0000006GsZEAU/apex",
+  "type": "com.salesforce.function.invoke.sync",
+  "permissionSets": [ "AccountAPIAuthorization" ]
+}
