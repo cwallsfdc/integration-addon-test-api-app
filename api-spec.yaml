@@ -12,8 +12,8 @@ paths:
     get:
       description: Be nice, be happy
       parameters:
-        - in: query
-          name: name
+        - name: name
+          in: query
           schema:
             type: string
           required: true

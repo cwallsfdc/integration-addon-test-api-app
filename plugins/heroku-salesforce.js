@@ -672,8 +672,8 @@ module.exports = fp(async function (fastify, opts) {
                 }
 
                 const customAsyncHandler = customAsyncHandlers[`${routeIdx}`];
-                request.log.info(`Did ${customAsyncHandler ? 'find' : 'not find'} async handle for route index ${routeIdx}`);
                 if (customAsyncHandler) {
+                    request.log.info(`Found async handle for route index ${routeIdx}`);
                     await customAsyncHandler(request, reply);
                     request.salesforce.asyncComplete = true;
                     request.log.info(`Set async ${routeIdx} completes`);

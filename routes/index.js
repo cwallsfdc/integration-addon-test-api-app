@@ -8,7 +8,7 @@ module.exports = async function (fastify, opts) {
    /**
     * Return Accounts given count to retrieve.
     */
-    fastify.post('/accounts/', async function (request, reply) {
+    fastify.post('/accounts', async function (request, reply) {
         const event = request.salesforce.event;
         const context = request.salesforce.context;
         const logger = request.salesforce.logger;
@@ -30,7 +30,7 @@ module.exports = async function (fastify, opts) {
     /**
      * Worker invoked to retrieve Accounts from specified connection (org).
      */
-    fastify.get('/accounts/', {config: {salesforce: {managed: false}}}, async function (request, reply) {
+    fastify.get('/accounts', {config: {salesforce: {managed: false}}}, async function (request, reply) {
 
         // 1. Get connection token via add-on API
         // 2. Query org for Accounts
