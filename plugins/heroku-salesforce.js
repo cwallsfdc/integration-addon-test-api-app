@@ -454,7 +454,7 @@ class RequestHandler {
         }
 
         const userContext = this.orgContext.userContext;
-        const url = `${userContext.orgDomainUrl}/services/oauth2/token`;
+        const url = `${this.orgContext.orgDomainUrl}/services/oauth2/token`;
         const isTest = (url.includes('.sandbox.') || url.includes('.scratch.'));
 
         let audience = isTest ? SANDBOX_AUDIENCE_URL : PROD_AUDIENCE_URL;
