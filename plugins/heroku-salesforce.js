@@ -303,7 +303,7 @@ class HttpRequestUtil {
             this.got = got.got;
         }
 
-        this.logger(`${opts.method} ${url} ${opts.headers ? JSON.stringify(opts.headers) : ''}`);
+        this.logger.info(`${opts.method} ${url} ${opts.headers ? JSON.stringify(opts.headers) : ''}`);
         return json ? await this.got(url, opts).json() : await this.got(url, opts);
     }
 }
