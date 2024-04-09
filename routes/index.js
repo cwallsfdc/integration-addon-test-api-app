@@ -1,18 +1,16 @@
 'use strict'
 
+
 module.exports = async function (fastify, opts) {
+    /**
+     * Return 'Wassup <given name>' message
+     */
     fastify.get('/hello', {config: {salesforce: {managed: false}}}, async function (request, reply) {
         return `Wassup ${request.body.name}!`;
     });
 
-   /**
-    * Return Accounts given count to retrieve.
-    */
-    fastify.post('/accounts', async function (request, reply) {
-        const event = request.salesforce.event;
-        const context = request.salesforce.context;
-        const logger = request.salesforce.logger;
-
+    // DIRECT copy of function source
+    const copyPasteFunctionCode = async (event, context, logger) => {
         logger.info(
             `Invoking Account API with payload ${JSON.stringify(
                 event.data || {}
@@ -22,9 +20,20 @@ module.exports = async function (fastify, opts) {
         const count = event.data.count ? event.data.count : 2;
         const query = `SELECT Id, Name FROM Account LIMIT ${count}`;
         const results = await context.org.dataApi.query(query);
-        request.log.info(JSON.stringify(results));
+        logger.info(JSON.stringify(results));
 
         return results.records.map(record => record.fields);
+    }
+
+   /**
+    * Return Accounts given count to retrieve.
+    */
+    fastify.post('/accounts', async function (request, reply) {
+        const event = request.salesforce.event;
+        const context = request.salesforce.context;
+        const logger = request.salesforce.logger;
+
+        return await copyPasteFunctionCode(event, context, logger);
     });
 
     /**
@@ -33,6 +42,9 @@ module.exports = async function (fastify, opts) {
     fastify.get('/accounts', {config: {salesforce: {managed: false}}}, async function (request, reply) {
 
         // 1. Get connection token via add-on API
+        const integrationApi = request.heroku.integration;
+        const accessToken = integrationApi.getToken(process.env['ORG_CONNECTION']);
+
         // 2. Query org for Accounts
 
         return [];
@@ -44,7 +56,7 @@ module.exports = async function (fastify, opts) {
     * while maintaining the relationships. It then commits the unit of work and
     * returns the Record Id's for each object.
     */
-    fastify.post('/uow', {config: {salesforce: {async: true}}}, async function (request, reply) {
+    fastify.post('/unitofwork', {config: {salesforce: {async: true}}}, async function (request, reply) {
         const event = request.salesforce.event;
         const context = request.salesforce.context;
         const logger = request.log;

@@ -34,7 +34,7 @@ const PROD_AUDIENCE_URL = 'https://login.salesforce.com';
  */
 function throwError(msg, statusCode, requestId) {
     if (requestId) {
-        msg = `[${this.requestId}] ${msg}`;
+        msg = `[${requestId}] ${msg}`;
     }
     const err = new Error(msg);
     err.statusCode = statusCode;
@@ -495,7 +495,7 @@ class RequestHandler {
             let errMsg;
             if (err.response) {
                 const errResponse = JSON.parse(err.response.body);
-                errMsg = `Unable to mint function token: ${errResponse.error} (${errResponse.error_description})`;
+                errMsg = `Unable to mint app token: ${errResponse.error} (${errResponse.error_description})`;
                 if (errMsg.includes('invalid_app_access') || errMsg.includes('user hasn\'t approved this consumer')) {
                     errMsg += `. Ensure that the target Connected App is set to "Admin approved users are pre-authorized" and user ${orgContext.userContext.username} is assigned to Connected App via a Permission Set`;
                 }
@@ -537,7 +537,7 @@ class RequestHandler {
                 inputs.push({PermSetName: permissionSet});
             }
         });
-        this.logger.debug(`[${this.requestId}] POST /actions/standard/activateSessionPermSet: ${JSON.stringify(inputs)}`);
+        this.logger.info(`[${this.requestId}] POST /actions/standard/activateSessionPermSet: ${JSON.stringify(inputs)}`);
 
         const url = this.assembleSalesforceAPIUrl(this.orgContext.orgDomainUrl,
             this.orgContext.apiVersion,
